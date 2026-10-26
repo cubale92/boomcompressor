@@ -1,9 +1,13 @@
 name: Build Boom-8
 
 # Runs on every push, or by hand from the Actions tab ("Run workflow").
+# Finished plug-ins are attached to the "Latest build" release on the repo's front page.
 on:
   push:
   workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   build:
@@ -16,8 +20,9 @@ jobs:
           - os: macos-latest
             name: macOS
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Configure
         run: cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"
@@ -28,12 +33,33 @@ jobs:
       - name: Collect plug-ins
         shell: bash
         run: |
-          mkdir -p dist
-          cp -R "build/Boom8_artefacts/Release/VST3/8cee Boom-8.vst3" dist/
-          if [ -d "build/Boom8_artefacts/Release/AU" ]; then cp -R "build/Boom8_artefacts/Release/AU/8cee Boom-8.component" dist/; fi
-          cp README.md dist/
+          mkdir -p "dist/8cee Boom-8"
+          cp -R "build/Boom8_artefacts/Release/VST3/8cee Boom-8.vst3" "dist/8cee Boom-8/"
+          if [ -d "build/Boom8_artefacts/Release/AU" ]; then cp -R "build/Boom8_artefacts/Release/AU/8cee Boom-8.component" "dist/8cee Boom-8/"; fi
+          cp README.md "dist/8cee Boom-8/"
+
+      - name: Zip
+        shell: bash
+        run: |
+          cd dist
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            7z a -tzip "../8cee-Boom-8-${{ matrix.name }}.zip" "8cee Boom-8" > /dev/null
+          else
+            ditto -c -k --keepParent "8cee Boom-8" "../8cee-Boom-8-${{ matrix.name }}.zip"
+          fi
 
       - uses: actions/upload-artifact@v4
         with:
           name: 8cee-Boom-8-${{ matrix.name }}
-          path: dist
+          path: 8cee-Boom-8-${{ matrix.name }}.zip
+
+      - name: Publish to "Latest build" release
+        if: github.ref == 'refs/heads/main'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view latest >/dev/null 2>&1 || \
+            gh release create latest --title "Latest build" --notes "Download the zip for your system, unzip it, and copy 8cee Boom-8.vst3 into your VST3 folder (see README)." --latest || true
+          sleep 5
+          gh release upload latest "8cee-Boom-8-${{ matrix.name }}.zip" --clobber

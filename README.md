@@ -42,22 +42,22 @@ Presets are roughly level-matched so you can A/B fairly.
 
 Presets also show up in your DAW's own program/preset list.
 
-## Getting the plug-in (no terminal needed)
+## Download
 
-The `.github/workflows/build.yml` file makes GitHub build the plug-in for you.
+Go to the repo's front page and click **Releases → Latest build** (right-hand side),
+then download the zip for your system:
 
-1. On github.com, create a new repository (or open an existing one).
-2. **Add file → Upload files**, drag in everything from this folder, **Commit**.
-   - The `.github` folder is hidden on macOS. If it doesn't upload, use
-     **Add file → Create new file**, type `.github/workflows/build.yml` as the name,
-     paste the contents of that file, and commit.
-3. Open the **Actions** tab. The "Build Boom-8" run starts automatically
-   (or click **Run workflow**). It takes about 10 minutes.
-4. When it's green, open the run and download **8cee-Boom-8-Windows** or **8cee-Boom-8-macOS**.
-5. Copy `8cee Boom-8.vst3` into your VST3 folder:
-   - Windows: `C:\Program Files\Common Files\VST3`
-   - macOS: `/Library/Audio/Plug-Ins/VST3` (and the `.component` into `/Library/Audio/Plug-Ins/Components` for Logic)
-6. Rescan plug-ins in your DAW.
+- **8cee-Boom-8-Windows.zip**
+- **8cee-Boom-8-macOS.zip**
+
+Unzip it and copy `8cee Boom-8.vst3` into your VST3 folder:
+- Windows: `C:\Program Files\Common Files\VST3`
+- macOS: `/Library/Audio/Plug-Ins/VST3` (and the `.component` into `/Library/Audio/Plug-Ins/Components` for Logic)
+
+Then rescan plug-ins in your DAW.
+
+Every push to `main` rebuilds the plug-ins and updates that release automatically
+(via `.github/workflows/build.yml`, about 5–15 minutes).
 
 The macOS build is unsigned: if macOS blocks it when your DAW scans it, click **Allow Anyway**
 under System Settings → Privacy & Security, then rescan.
